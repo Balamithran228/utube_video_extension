@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Webtoon Panel Cutter</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body class="panel-cutter-popup">
+    <main>
+      <h1>Webtoon Panel Cutter</h1>
+
+      <section class="popup-section">
+        <label class="popup-label">Mode</label>
+        <p id="modeText" class="mode-text">Checking current mode...</p>
+        <div class="mode-grid">
+          <button type="button" class="mode-btn" data-mode="off">Off</button>
+          <button type="button" class="mode-btn" data-mode="cutter">Cutter</button>
+          <button type="button" class="mode-btn" data-mode="box">Box</button>
+          <button type="button" class="mode-btn" data-mode="section">Section</button>
+        </div>
+      </section>
+
+      <section class="popup-section">
+        <label class="popup-label">How it works</label>
+        <p class="hint"><strong>Cutter:</strong> right-click pairs of horizontal lines, then End &amp; Save.</p>
+        <p class="hint"><strong>Box:</strong> right-click and drag to mark rectangles, then End &amp; Save.</p>
+        <p class="hint"><strong>Section:</strong> right-click marks the visible viewport, then End &amp; Save.</p>
+        <p class="hint">Use Ctrl+Z to remove the last item placed.</p>
+      </section>
+
+      <section class="popup-section">
+        <label class="popup-label">Saving</label>
+        <p class="hint">Panels are saved automatically to your <strong>Downloads</strong> folder inside a subfolder named <strong>mode-YYYYMMDD-HHmmss</strong>.</p>
+        <p class="hint">Tip: turn off &ldquo;Ask where to save each file&rdquo; in Chrome settings for uninterrupted saving.</p>
+      </section>
+    </main>
+    <script src="popup.js"></script>
+  </body>
+</html>

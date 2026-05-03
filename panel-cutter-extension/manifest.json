@@ -1,0 +1,47 @@
+{
+  "manifest_version": 3,
+  "name": "Webtoon Panel Cutter",
+  "description": "Cut and download long-scroll webtoon panels by placing paired horizontal cut lines.",
+  "version": "1.0.0",
+  "permissions": [
+    "activeTab",
+    "scripting",
+    "downloads",
+    "storage"
+  ],
+  "host_permissions": [
+    "<all_urls>"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_title": "Webtoon Panel Cutter",
+    "default_popup": "popup.html"
+  },
+  "commands": {
+    "undo-last-cut": {
+      "suggested_key": {
+        "default": "Ctrl+Z",
+        "mac": "Command+Z"
+      },
+      "description": "Remove the last Webtoon Panel Cutter cut line"
+    }
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "overlay.js",
+        "cropper.js",
+        "content.js"
+      ],
+      "css": [
+        "styles.css"
+      ],
+      "run_at": "document_idle"
+    }
+  ]
+}
