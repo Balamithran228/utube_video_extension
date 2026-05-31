@@ -1,5 +1,6 @@
 const MESSAGE_TYPES = {
   GET_PREVIEW_PANELS: "PANEL_CUTTER_GET_PREVIEW_PANELS",
+  GET_PREVIEW_PANEL: "PANEL_CUTTER_GET_PREVIEW_PANEL",
   CLEAR_PREVIEW_PANELS: "PANEL_CUTTER_CLEAR_PREVIEW_PANELS"
 };
 
@@ -48,14 +49,35 @@ async function init() {
       throw new Error(response?.error || "Unable to load captured panels.");
     }
 
-    panels = response.panels || [];
+    const count = response.count || 0;
     panelMode = response.mode || "cutter";
+    panels = [];
+
+    for (let index = 0; index < count; index += 1) {
+      panelCount.textContent = `Loading panel ${index + 1} of ${count}...`;
+      panels.push(await loadPreviewPanel(index));
+      await nextFrame();
+    }
+
     renderGallery();
   } catch (error) {
     panelCount.textContent = error.message;
     saveAllButton.disabled = true;
     saveAllTrimmedButton.disabled = true;
   }
+}
+
+async function loadPreviewPanel(index) {
+  const response = await chrome.runtime.sendMessage({
+    type: MESSAGE_TYPES.GET_PREVIEW_PANEL,
+    index
+  });
+
+  if (!response?.ok) {
+    throw new Error(response?.error || `Unable to load panel ${index + 1}.`);
+  }
+
+  return response.dataUrl;
 }
 
 function renderGallery() {

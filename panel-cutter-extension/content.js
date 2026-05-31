@@ -9,6 +9,8 @@
     SET_MODE: "PANEL_CUTTER_SET_MODE",
     MODE_CHANGED: "PANEL_CUTTER_MODE_CHANGED",
     UNDO_LAST_CUT: "PANEL_CUTTER_UNDO_LAST_CUT",
+    ADD_PREVIEW_PANEL: "PANEL_CUTTER_ADD_PREVIEW_PANEL",
+    CLEAR_PREVIEW_PANELS: "PANEL_CUTTER_CLEAR_PREVIEW_PANELS",
     OPEN_PREVIEW_POPUP: "OPEN_PREVIEW_POPUP"
   };
 
@@ -485,14 +487,42 @@
   }
 
   async function openPreviewPopup(panels) {
+    await clearPreviewQueue();
+
+    for (let index = 0; index < panels.length; index += 1) {
+      overlay.showStatus(`Preparing preview ${index + 1} of ${panels.length}...`);
+      await addPreviewPanel(panels[index]);
+    }
+
     const response = await chrome.runtime.sendMessage({
       type: MESSAGE_TYPES.OPEN_PREVIEW_POPUP,
-      panels,
       mode: state.mode
     });
 
     if (!response?.ok) {
       throw new Error(response?.error || "Unable to open the preview window.");
+    }
+  }
+
+  async function addPreviewPanel(dataUrl) {
+    const response = await chrome.runtime.sendMessage({
+      type: MESSAGE_TYPES.ADD_PREVIEW_PANEL,
+      mode: state.mode,
+      dataUrl
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || "Unable to prepare a captured image for preview.");
+    }
+  }
+
+  async function clearPreviewQueue() {
+    const response = await chrome.runtime.sendMessage({
+      type: MESSAGE_TYPES.CLEAR_PREVIEW_PANELS
+    });
+
+    if (!response?.ok) {
+      throw new Error(response?.error || "Unable to clear the previous preview queue.");
     }
   }
 

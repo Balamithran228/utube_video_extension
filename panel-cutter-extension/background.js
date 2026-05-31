@@ -6,7 +6,9 @@ const MESSAGE_TYPES = {
   MODE_CHANGED: "PANEL_CUTTER_MODE_CHANGED",
   UNDO_LAST_CUT: "PANEL_CUTTER_UNDO_LAST_CUT",
   OPEN_PREVIEW_POPUP: "OPEN_PREVIEW_POPUP",
+  ADD_PREVIEW_PANEL: "PANEL_CUTTER_ADD_PREVIEW_PANEL",
   GET_PREVIEW_PANELS: "PANEL_CUTTER_GET_PREVIEW_PANELS",
+  GET_PREVIEW_PANEL: "PANEL_CUTTER_GET_PREVIEW_PANEL",
   CLEAR_PREVIEW_PANELS: "PANEL_CUTTER_CLEAR_PREVIEW_PANELS"
 };
 
@@ -62,12 +64,22 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
   }
 
   if (message.type === MESSAGE_TYPES.OPEN_PREVIEW_POPUP) {
-    openPreviewPopup(message.panels || [], message.mode || "cutter", sendResponse);
+    openPreviewPopup(message.mode || "cutter", sendResponse);
+    return true;
+  }
+
+  if (message.type === MESSAGE_TYPES.ADD_PREVIEW_PANEL) {
+    addPreviewPanel(message.dataUrl, message.mode || "cutter", sendResponse);
     return true;
   }
 
   if (message.type === MESSAGE_TYPES.GET_PREVIEW_PANELS) {
-    sendResponse({ ok: true, panels: previewPanels, mode: previewMode });
+    sendResponse({ ok: true, count: previewPanels.length, mode: previewMode });
+    return true;
+  }
+
+  if (message.type === MESSAGE_TYPES.GET_PREVIEW_PANEL) {
+    getPreviewPanel(message.index, sendResponse);
     return true;
   }
 
@@ -129,10 +141,29 @@ function downloadImage(message, sendResponse) {
   );
 }
 
-function openPreviewPopup(panels, mode, sendResponse) {
-  previewPanels = panels.filter(Boolean);
-  previewMode = mode;
+function addPreviewPanel(dataUrl, mode, sendResponse) {
+  if (!dataUrl) {
+    sendResponse({ ok: false, error: "No captured image was provided for preview." });
+    return;
+  }
 
+  previewMode = mode;
+  previewPanels.push(dataUrl);
+  sendResponse({ ok: true, count: previewPanels.length });
+}
+
+function getPreviewPanel(index, sendResponse) {
+  const panelIndex = Number(index);
+  if (!Number.isInteger(panelIndex) || panelIndex < 0 || panelIndex >= previewPanels.length) {
+    sendResponse({ ok: false, error: "Preview panel was not found." });
+    return;
+  }
+
+  sendResponse({ ok: true, dataUrl: previewPanels[panelIndex] });
+}
+
+function openPreviewPopup(mode, sendResponse) {
+  previewMode = mode;
   chrome.windows.create(
     {
       url: chrome.runtime.getURL("preview.html"),
