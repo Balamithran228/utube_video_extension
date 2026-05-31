@@ -58,15 +58,16 @@ Draw arbitrary rectangles over the page and capture each one.
 
 ### Section Mode
 
-Bookmark scroll positions and capture the full visible viewport at each one.
+Capture the full visible viewport at each bookmark. Section mode saves what is on screen immediately, so each section can use its own browser zoom or touchpad zoom level.
 
 1. Select **Section** in the popup.
-2. Scroll to a position, right-click anywhere — a **green highlighted band** covering the full viewport appears, numbered.
-3. Scroll, right-click again, repeat.
-4. Click **End & Save**.
-5. Files saved to `Downloads/section-YYYYMMDD-HHmmss/panel-001.png` …
+2. Scroll and zoom until the image looks right on screen.
+3. Right-click anywhere, or press `Space`, to capture that current viewport. A **green highlighted band** covering the full viewport appears, numbered.
+4. Scroll to the next image, change zoom if needed, and capture again.
+5. Click **End & Save**.
+6. Files saved to `Downloads/section-YYYYMMDD-HHmmss/panel-001.png` …
 
-> Browser chrome (URL bar, tabs, scrollbar) is excluded automatically. The green band shows exactly what will be captured. Use **Ctrl+Z** to remove the last bookmark.
+> Browser chrome (URL bar, tabs, scrollbar) is excluded automatically. The green band shows the viewport that was captured at that moment. Use **Ctrl+Z** to remove the last bookmark.
 
 ---
 
@@ -116,6 +117,8 @@ Downloads/
 | Shortcut | Windows / Linux | macOS |
 |---|---|---|
 | Remove last cut / box / section | `Ctrl+Z` | `⌘+Z` |
+| Capture section viewport | `Space` | `Space` |
+| Place cutter line at viewport center | `Space` | `Space` |
 | Previous / next panel in viewer | `←` / `→` | `←` / `→` |
 | Close the viewer | `Esc` | `Esc` |
 

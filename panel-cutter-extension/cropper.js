@@ -146,6 +146,18 @@
     }
   }
 
+  async function captureCurrentViewport() {
+    return await withCaptureUiHidden(async () => {
+      const dataUrl = await requestVisibleTabCapture();
+      const image = await loadImage(dataUrl);
+      return {
+        dataUrl,
+        width: image.naturalWidth,
+        height: image.naturalHeight
+      };
+    });
+  }
+
   async function captureSegments(regionTop, regionBottom, captureWidthCss, dpr) {
     const segments = [];
     const viewportHeight = Math.max(1, window.innerHeight);
@@ -368,6 +380,7 @@
     capturePageRegion,
     captureBox,
     captureViewportAt,
+    captureCurrentViewport,
     downloadDataUrl
   };
 })();

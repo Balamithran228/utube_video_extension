@@ -231,13 +231,15 @@
     overlayState.rubberBand.style.height = "0";
   }
 
-  function addSectionMarker(pageY, viewportHeight, index) {
+  function addSectionMarker(viewportRect, index) {
     mountIfNeeded();
 
     const marker = document.createElement("div");
     marker.className = SECTION_CLASS;
-    marker.style.top = `${pageY}px`;
-    marker.style.height = `${Math.max(1, viewportHeight)}px`;
+    marker.style.left = `${viewportRect.left}px`;
+    marker.style.top = `${viewportRect.top}px`;
+    marker.style.width = `${Math.max(1, viewportRect.width)}px`;
+    marker.style.height = `${Math.max(1, viewportRect.height)}px`;
     marker.title = `Section ${index}`;
 
     const badge = document.createElement("span");

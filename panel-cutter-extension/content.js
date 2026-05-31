@@ -131,7 +131,7 @@
         // Box commit happens in mouseup. Suppress the browser context menu only.
         break;
       case "section":
-        handleSectionContextMenu();
+        captureSectionBookmark();
         break;
       default:
         break;
@@ -145,6 +145,10 @@
     }
 
     const y = Math.round(window.scrollY + event.clientY);
+    addCutterCut(y);
+  }
+
+  function addCutterCut(y) {
     state.cuts.push(y);
     overlay.addCutLine(y, state.cuts.length);
 
@@ -162,18 +166,37 @@
     updateEndButton();
   }
 
-  function handleSectionContextMenu() {
+  async function captureSectionBookmark() {
     // Guard: section markers must never appear in other modes.
     if (state.mode !== "section") {
       return;
     }
 
-    const scrollY = Math.round(window.scrollY);
-    const viewportHeight = window.innerHeight;
-    state.sections.push({ scrollY });
-    overlay.addSectionMarker(scrollY, viewportHeight, state.sections.length);
-    overlay.showStatus(`Section ${state.sections.length} bookmarked. Scroll and right-click to add more.`);
-    updateEndButton();
+    if (state.isExtracting) {
+      overlay.showStatus("Capture in progress. Please wait.", true);
+      return;
+    }
+
+    const viewportRect = getVisibleViewportRect();
+    state.isExtracting = true;
+    updateEndButton("Capturing...");
+    overlay.showStatus(`Capturing section ${state.sections.length + 1}...`);
+
+    try {
+      const result = await cropper.captureCurrentViewport();
+      state.sections.push({
+        viewportRect,
+        dataUrl: result.dataUrl
+      });
+      overlay.addSectionMarker(viewportRect, state.sections.length);
+      overlay.showStatus(`Section ${state.sections.length} captured. Scroll, zoom, and capture more.`);
+    } catch (error) {
+      console.error(error);
+      overlay.showStatus(error.message || "Unable to capture this section.", true);
+    } finally {
+      state.isExtracting = false;
+      updateEndButton();
+    }
   }
 
   function handleMouseDown(event) {
@@ -255,15 +278,64 @@
     };
   }
 
+  function getVisibleViewportRect() {
+    const viewport = window.visualViewport;
+
+    if (viewport) {
+      return {
+        left: Math.round(viewport.pageLeft),
+        top: Math.round(viewport.pageTop),
+        width: Math.round(viewport.width),
+        height: Math.round(viewport.height)
+      };
+    }
+
+    return {
+      left: Math.round(window.scrollX),
+      top: Math.round(window.scrollY),
+      width: window.innerWidth,
+      height: window.innerHeight
+    };
+  }
+
   function handleKeyDown(event) {
     const isUndo = (event.ctrlKey || event.metaKey) && !event.shiftKey && !event.altKey && event.key.toLowerCase() === "z";
-    if (state.mode === "off" || !isUndo) {
+    const isPlainSpace = event.code === "Space" && !event.ctrlKey && !event.metaKey && !event.shiftKey && !event.altKey;
+    if (state.mode === "off" || (!isUndo && !isPlainSpace)) {
       return;
     }
 
     event.preventDefault();
     event.stopPropagation();
-    undoLast();
+
+    if (isUndo) {
+      undoLast();
+      return;
+    }
+
+    handleSpaceShortcut();
+  }
+
+  function handleSpaceShortcut() {
+    if (state.isExtracting) {
+      overlay.showStatus("Capture in progress. Please wait.", true);
+      return;
+    }
+
+    if (state.mode === "section") {
+      captureSectionBookmark();
+      return;
+    }
+
+    if (state.mode === "cutter") {
+      const y = Math.round(window.scrollY + (window.innerHeight / 2));
+      addCutterCut(y);
+      return;
+    }
+
+    if (state.mode === "box") {
+      overlay.showStatus("Box mode still needs right-click drag to choose the rectangle.");
+    }
   }
 
   async function handleEndClick() {
@@ -374,8 +446,7 @@
     try {
       for (let index = 0; index < state.sections.length; index += 1) {
         overlay.showStatus(`Capturing section ${index + 1} of ${total}...`);
-        const result = await cropper.captureViewportAt(state.sections[index].scrollY);
-        previewPanels.push(result.dataUrl);
+        previewPanels.push(state.sections[index].dataUrl);
       }
 
       await openPreviewPopup(previewPanels);
